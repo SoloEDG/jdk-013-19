@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import type { Entry, Hotspot, Position } from "../../../shared/types";
+import type { Entry, Hotspot, LoopRange, Position } from "../../../shared/types";
 import { loadEntries, persist } from "../lib/storage";
 export function createJournal() {
   const entries = ref<Entry[]>(loadEntries()),
@@ -16,7 +16,7 @@ export function createJournal() {
     entries,
     error,
     has: (id: string) => entries.value.some((e) => e.hotspotId === id),
-    save: (hotspot: Hotspot, position: Position) => {
+    save: (hotspot: Hotspot, position: Position, loop?: LoopRange) => {
       if (entries.value.some((e) => e.hotspotId === hotspot.id)) return;
       commit([
         ...entries.value,
@@ -29,6 +29,7 @@ export function createJournal() {
           title: hotspot.title,
           note: "",
           createdAt: Date.now(),
+          ...(loop ? { loop: { ...loop } } : {}),
         },
       ]);
     },

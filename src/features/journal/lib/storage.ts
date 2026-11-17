@@ -4,21 +4,30 @@ export function loadEntries(): Entry[] {
   try {
     const raw: unknown = JSON.parse(localStorage.getItem(key) || "[]");
     if (!Array.isArray(raw)) return [];
-    return raw.filter(
-      (e): e is Entry =>
-        !!e &&
-        typeof e.id === "string" &&
-        typeof e.hotspotId === "string" &&
-        typeof e.chapterId === "string" &&
-        Number.isFinite(e.time) &&
-        typeof e.title === "string" &&
-        typeof e.note === "string" &&
-        e.camera &&
-        Number.isFinite(e.camera.yaw) &&
-        Number.isFinite(e.camera.pitch) &&
-        Number.isFinite(e.camera.fov) &&
-        Number.isFinite(e.createdAt),
-    );
+    return raw
+      .filter(
+        (e): e is Entry =>
+          !!e &&
+          typeof e.id === "string" &&
+          typeof e.hotspotId === "string" &&
+          typeof e.chapterId === "string" &&
+          Number.isFinite(e.time) &&
+          typeof e.title === "string" &&
+          typeof e.note === "string" &&
+          e.camera &&
+          Number.isFinite(e.camera.yaw) &&
+          Number.isFinite(e.camera.pitch) &&
+          Number.isFinite(e.camera.fov) &&
+          Number.isFinite(e.createdAt),
+      )
+      .map((e) =>
+        e.loop &&
+        Number.isFinite(e.loop.start) &&
+        Number.isFinite(e.loop.end) &&
+        e.loop.end > e.loop.start
+          ? e
+          : { ...e, loop: undefined },
+      );
   } catch {
     return [];
   }

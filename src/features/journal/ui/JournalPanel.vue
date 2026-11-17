@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Download, Bookmark, Trash2, ArrowUpRight } from "lucide-vue-next";
+import { Download, Bookmark, Trash2, ArrowUpRight, Repeat } from "lucide-vue-next";
 import { timecode } from "../../../shared/format";
 import type { Entry } from "../../../shared/types";
 import type { Journal } from "../model/entries";
 import { exportJournal } from "../lib/export";
 defineProps<{ journal: Journal }>();
-defineEmits<{ revisit: [entry: Entry] }>();
+defineEmits<{ revisit: [payload: { entry: Entry; restoreLoop: boolean }] }>();
 </script>
 <template>
   <section class="journal-panel">
@@ -44,10 +44,25 @@ defineEmits<{ revisit: [entry: Entry] }>();
           {{ new Date(e.createdAt).toLocaleDateString("zh-CN") }}</small
         >
         <h3>{{ e.title }}</h3>
+        <p v-if="e.loop" class="loop-context">
+          <Repeat :size="11" /> 复看区间 {{ timecode(e.loop.start) }} –
+          {{ timecode(e.loop.end) }} 内收藏
+        </p>
       </div>
-      <button class="text-button" @click="$emit('revisit', e)">
-        回到现场 <ArrowUpRight :size="16" /></button
-      ><textarea
+      <div class="revisit-actions">
+        <button
+          class="text-button"
+          @click="$emit('revisit', { entry: e, restoreLoop: false })"
+        >
+          回到现场 <ArrowUpRight :size="16" /></button
+        ><button
+          v-if="e.loop"
+          class="text-button"
+          @click="$emit('revisit', { entry: e, restoreLoop: true })"
+        >
+          恢复区间复看 <Repeat :size="14" />
+        </button>
+      </div><textarea
         aria-label="记录感想"
         maxlength="500"
         :value="e.note"

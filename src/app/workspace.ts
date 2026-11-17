@@ -1,13 +1,15 @@
 import { ref } from "vue";
 import { createCamera } from "../features/panorama";
-import { createPlayback } from "../features/chapters";
+import { createPlayback, createLoop } from "../features/chapters";
 import { createDiscovery } from "../features/hotspots";
 import { createBranch } from "../features/interviews";
 import { createJournal } from "../features/journal";
+import { inRange } from "../features/chapters/lib/loop";
 import type { Command, Position } from "../shared/types";
 export function createWorkspace() {
   const camera = createCamera(),
     playback = createPlayback(),
+    loop = createLoop(playback),
     discovery = createDiscovery(() => playback.state),
     branch = createBranch(),
     journal = createJournal(),
@@ -27,6 +29,7 @@ export function createWorkspace() {
     switch (command.type) {
       case "chapter":
         if (branch.personId.value) return;
+        loop.deactivate();
         playback.select(command.id);
         camera.reset();
         discovery.close();
@@ -49,21 +52,33 @@ export function createWorkspace() {
       }
       case "revisit":
         branch.leave();
+        loop.deactivate();
         playback.select(command.entry.chapterId);
         playback.seek(command.entry.time);
         camera.restore(command.entry.camera);
         discovery.select(command.entry.hotspotId);
+        if (command.restoreLoop && command.entry.loop)
+          loop.restore(command.entry.chapterId, command.entry.loop);
         tab.value = "story";
         break;
     }
   }
   function save() {
-    const h = discovery.detail.value;
-    if (h) journal.save(h, position());
+    const h = discovery.detail.value,
+      r = loop.range.value;
+    if (h)
+      journal.save(
+        h,
+        position(),
+        loop.state.active && r && inRange(r, playback.state.time)
+          ? r
+          : undefined,
+      );
   }
   return {
     camera,
     playback,
+    loop,
     discovery,
     branch,
     journal,

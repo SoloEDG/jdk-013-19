@@ -38,6 +38,10 @@ export interface Position {
   camera: Camera;
   playing: boolean;
 }
+export interface LoopRange {
+  start: number;
+  end: number;
+}
 export interface Entry {
   id: string;
   hotspotId: string;
@@ -47,10 +51,11 @@ export interface Entry {
   title: string;
   note: string;
   createdAt: number;
+  loop?: LoopRange;
 }
 export type Command =
   | { type: "chapter"; id: string }
   | { type: "seek"; time: number }
   | { type: "hotspot"; id: string }
   | { type: "return" }
-  | { type: "revisit"; entry: Entry };
+  | { type: "revisit"; entry: Entry; restoreLoop?: boolean };

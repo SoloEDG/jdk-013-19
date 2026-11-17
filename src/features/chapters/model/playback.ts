@@ -10,6 +10,7 @@ export function createPlayback() {
     rate: 1,
     ready: false,
     error: "",
+    scrubbing: false,
   });
   const chapter = computed(() =>
     chapters.find((c) => c.id === state.chapterId)!,

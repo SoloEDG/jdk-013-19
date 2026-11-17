@@ -10,6 +10,7 @@ import {
   BookOpen,
   Compass,
   ChevronRight,
+  Sparkles,
   X,
 } from "lucide-vue-next";
 import { PanoramaView } from "../features/panorama";
@@ -75,6 +76,7 @@ async function fullscreen() {
               :source="w.playback.chapter.value.panorama"
               ><MediaPlayer
                 :playback="w.playback"
+                :loop="w.loop"
                 :branch="!!w.branch.personId.value"
               />
               <div class="stage-shade" />
@@ -91,6 +93,17 @@ async function fullscreen() {
                 :enabled="w.discovery.enabled.value && !w.branch.personId.value"
                 @open="w.dispatch({ type: 'hotspot', id: $event })"
               />
+              <button
+                v-if="w.discovery.notice.value && !w.branch.personId.value"
+                class="discovery-toast"
+                role="status"
+                @click="
+                  w.dispatch({ type: 'hotspot', id: w.discovery.notice.value!.id })
+                "
+              >
+                <Sparkles :size="13" /> 发现新热点 ·
+                {{ w.discovery.notice.value.title }}
+              </button>
               <div class="scene-caption">
                 <small
                   >CHAPTER 0{{
@@ -119,6 +132,7 @@ async function fullscreen() {
               @back="w.dispatch({ type: 'return' })"
             /><Transport
               :playback="w.playback"
+              :loop="w.loop"
               :disabled="!!w.branch.personId.value"
               @reset="w.camera.reset()"
               @fullscreen="fullscreen"
@@ -183,7 +197,13 @@ async function fullscreen() {
       ><JournalPanel
         v-else
         :journal="w.journal"
-        @revisit="w.dispatch({ type: 'revisit', entry: $event })"
+        @revisit="
+          w.dispatch({
+            type: 'revisit',
+            entry: $event.entry,
+            restoreLoop: $event.restoreLoop,
+          })
+        "
       />
       <footer>
         <span>SHORELINE ORIGINALS <i>© 2026</i></span
